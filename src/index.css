@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-paper: 246 244 238;    /* #F6F4EE page bg */
+  --color-surface: 255 255 255;  /* #FFFFFF cards/sidebar/navbar */
+  --color-ink: 26 36 32;         /* #1A2420 */
+  --color-line: 217 212 195;     /* #D9D4C3 */
+}
+
+.dark {
+  --color-paper: 40 40 40;       /* #282828 — page bg */
+  --color-surface: 55 55 55;     /* #373737 — sidebar/navbar/cards */
+  --color-ink: 225 225 225;      /* #E1E1E1 — light text */
+  --color-line: 80 80 80;        /* #505050 — borders */
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans;
+  }
+  :focus-visible {
+    outline: 2px solid #0f4c36;
+    outline-offset: 2px;
+  }
+}
