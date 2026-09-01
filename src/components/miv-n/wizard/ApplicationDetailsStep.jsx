@@ -1,15 +1,17 @@
 // src/components/miv-n/wizard/ApplicationDetailsStep.jsx
-import { VARIATION_OPTIONS, Field, inputClass } from "./shared";
+import { Field, inputClass } from "./shared";
 
 export default function ApplicationDetailsStep({ data, onChange }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h2 className="font-display text-lg text-ink mb-1">Application Type</h2>
-        <p className="text-sm text-ink/60 mb-3">
+        <h2 className="font-display text-base text-ink mb-1">
+          Application Type
+        </h2>
+        <p className="text-xs text-ink/60 mb-2">
           Select the type of application you&apos;re filing.
         </p>
-        <div className="rounded-md border border-forest/40 bg-forest/[0.03] px-4 py-3 flex items-center gap-3">
+        <div className="rounded-md border border-forest/40 bg-forest/[0.03] px-3 py-2 flex items-center gap-2">
           <span className="w-4 h-4 rounded-full border-[5px] border-forest shrink-0" />
           <div>
             <p className="text-sm font-semibold text-ink">
@@ -33,33 +35,10 @@ export default function ApplicationDetailsStep({ data, onChange }) {
       </Field>
 
       <div>
-        <h3 className="text-sm font-medium text-ink/80 mb-1">Variation</h3>
-        <p className="text-xs text-ink/50 mb-3">
-          Select what&apos;s being varied on this registration.
-        </p>
-        <div className="space-y-2">
-          {VARIATION_OPTIONS.map((opt) => (
-            <label
-              key={opt.id}
-              className="flex items-center gap-3 rounded-md border border-line px-4 py-3 cursor-pointer hover:border-forest/40 transition-colors"
-            >
-              <input
-                type="radio"
-                name="variationType"
-                checked={data.variationType === opt.id}
-                onChange={() => onChange({ variationType: opt.id })}
-              />
-              <span className="text-sm text-ink">{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-sm font-medium text-ink/80 mb-2">
+        <h3 className="text-xs font-medium text-ink/80 mb-1.5">
           Terms and Conditions
         </h3>
-        <div className="rounded-md border border-line bg-paper px-4 py-3 h-28 overflow-y-auto text-xs text-ink/60 space-y-2">
+        <div className="rounded-md border border-line bg-paper px-3 py-2 h-32 overflow-y-auto text-[11px] text-ink/60 space-y-1.5">
           <p>
             1. By filing this application, you certify that you are an
             authorized representative of the establishment named in this form,
@@ -80,7 +59,7 @@ export default function ApplicationDetailsStep({ data, onChange }) {
             applications on file, and applicable evaluation procedures.
           </p>
         </div>
-        <label className="flex items-center gap-2 mt-3 text-sm text-ink/70">
+        <label className="flex items-center gap-2 mt-2 text-xs text-ink/70">
           <input
             type="checkbox"
             checked={data.agreedTerms}

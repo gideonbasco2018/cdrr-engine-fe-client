@@ -9,9 +9,11 @@ import {
   InvolvedPartiesStep,
   DocumentsStep,
   SummaryStep,
-  emptyParty,
 } from "../../../components/miv-n/WizardSteps";
-
+import {
+  REQUIREMENTS_BY_VARIATION,
+  DOCUMENT_REQUIREMENTS,
+} from "../../../components/miv-n/wizard/shared";
 const STEPS = [
   { key: "applicationDetails", label: "Application Details" },
   { key: "establishment", label: "Establishment Info" },
@@ -21,13 +23,10 @@ const STEPS = [
   { key: "summary", label: "Summary" },
 ];
 
-const FEES = { filing: 1000, variation: 2500, legalResearch: 35 };
-
 function initialFormData() {
   return {
     applicationDetails: {
       registrationNumber: "",
-      variationType: "",
       agreedTerms: false,
     },
     establishment: {
@@ -54,17 +53,14 @@ function initialFormData() {
       attested: false,
     },
     parties: {
-      parties: [emptyParty()],
+      parties: [],
       attested: false,
     },
     documents: {
-      additionalDocuments: [],
+      variationTypes: [],
+      requirementFiles: {},
     },
   };
-}
-
-function currency(n) {
-  return `₱${n.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 }
 
 export default function ApplicationWizardPage() {
@@ -90,9 +86,9 @@ export default function ApplicationWizardPage() {
 
   function canGoNext() {
     if (currentKey === "applicationDetails") {
-      return (
-        formData.applicationDetails.variationType &&
-        formData.applicationDetails.agreedTerms
+      return Boolean(
+        formData.applicationDetails.registrationNumber &&
+        formData.applicationDetails.agreedTerms,
       );
     }
     if (currentKey === "establishment") {
@@ -109,6 +105,26 @@ export default function ApplicationWizardPage() {
       return (
         formData.parties.parties.every((p) => p.role && p.name) &&
         formData.parties.attested
+      );
+    }
+    if (currentKey === "documents") {
+      const { variationTypes, requirementFiles } = formData.documents;
+
+      const allAdminRequirementsUploaded = DOCUMENT_REQUIREMENTS.filter(
+        (req) => req.required,
+      ).every((req) => (formData.documents[req.id] || []).length > 0);
+
+      const allTechnicalRequirementsUploaded = (variationTypes || []).every(
+        (vId) =>
+          (REQUIREMENTS_BY_VARIATION[vId] || []).every(
+            (req) => (requirementFiles?.[req.id] || []).length > 0,
+          ),
+      );
+
+      return (
+        allAdminRequirementsUploaded &&
+        (variationTypes || []).length > 0 &&
+        allTechnicalRequirementsUploaded
       );
     }
     return true;
@@ -129,9 +145,6 @@ export default function ApplicationWizardPage() {
     // TODO: wire to POST /app_logs (or the actual submission endpoint) once ready.
     setSubmitted(true);
   }
-
-  const total = FEES.filing + FEES.variation + FEES.legalResearch;
-  const hasVariation = !!formData.applicationDetails.variationType;
 
   if (submitted) {
     return (
@@ -163,10 +176,10 @@ export default function ApplicationWizardPage() {
 
   return (
     <AppLayout>
-      <div className="px-10 py-8">
-        <h1 className="font-display text-xl text-ink mb-6">Application</h1>
+      <div className="px-7 py-6">
+        <h1 className="font-display text-lg text-ink mb-4">Application</h1>
 
-        <div className="flex items-center mb-8 max-w-3xl">
+        <div className="flex items-center mb-5 max-w-3xl">
           {STEPS.map((step, i) => (
             <div
               key={step.key}
@@ -175,7 +188,7 @@ export default function ApplicationWizardPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <span
                   className={[
-                    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
+                    "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0",
                     i < stepIndex
                       ? "bg-forest text-paper"
                       : i === stepIndex
@@ -187,7 +200,7 @@ export default function ApplicationWizardPage() {
                 </span>
                 <span
                   className={[
-                    "text-xs whitespace-nowrap",
+                    "text-[11px] whitespace-nowrap",
                     i <= stepIndex ? "text-forest font-medium" : "text-ink/30",
                   ].join(" ")}
                 >
@@ -197,7 +210,7 @@ export default function ApplicationWizardPage() {
               {i < STEPS.length - 1 && (
                 <div
                   className={[
-                    "h-px flex-1 mx-3",
+                    "h-px flex-1 mx-2",
                     i < stepIndex ? "bg-forest" : "bg-line",
                   ].join(" ")}
                 />
@@ -206,8 +219,8 @@ export default function ApplicationWizardPage() {
           ))}
         </div>
 
-        <div className="flex gap-8 max-w-5xl">
-          <div className="flex-1 rounded-lg border border-line bg-white px-8 py-8">
+        <div>
+          <div className="rounded-lg border border-line bg-white px-6 py-5">
             {currentKey === "applicationDetails" && (
               <ApplicationDetailsStep
                 data={formData.applicationDetails}
@@ -240,11 +253,11 @@ export default function ApplicationWizardPage() {
             )}
             {currentKey === "summary" && <SummaryStep formData={formData} />}
 
-            <div className="flex justify-between mt-8 pt-6 border-t border-line">
+            <div className="flex justify-between mt-5 pt-4 border-t border-line">
               <button
                 type="button"
                 onClick={goBack}
-                className="rounded-md border border-line text-ink/70 hover:bg-ink/5 font-medium px-5 py-2.5 transition-colors text-sm"
+                className="rounded-md border border-line text-ink/70 hover:bg-ink/5 font-medium px-4 py-2 transition-colors text-xs"
               >
                 Back
               </button>
@@ -252,7 +265,7 @@ export default function ApplicationWizardPage() {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="rounded-md bg-forest hover:bg-forest-light text-paper font-medium px-5 py-2.5 transition-colors text-sm"
+                  className="rounded-md bg-forest hover:bg-forest-light text-paper font-medium px-4 py-2 transition-colors text-xs"
                 >
                   Submit Application
                 </button>
@@ -261,55 +274,13 @@ export default function ApplicationWizardPage() {
                   type="button"
                   onClick={goNext}
                   disabled={!canGoNext()}
-                  className="rounded-md bg-forest hover:bg-forest-light disabled:opacity-50 text-paper font-medium px-5 py-2.5 transition-colors text-sm"
+                  className="rounded-md bg-forest hover:bg-forest-light disabled:opacity-50 text-paper font-medium px-4 py-2 transition-colors text-xs"
                 >
                   Next
                 </button>
               )}
             </div>
           </div>
-
-          <aside className="w-64 shrink-0 rounded-lg border border-line bg-white px-5 py-5 h-fit">
-            <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-3">
-              Estimated Payment
-            </p>
-            {hasVariation ? (
-              <>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-ink/60">Filing Fee</span>
-                    <span className="text-ink">{currency(FEES.filing)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-ink/60">Variation Fee</span>
-                    <span className="text-ink">{currency(FEES.variation)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-ink/60">Legal Research Fee</span>
-                    <span className="text-ink">
-                      {currency(FEES.legalResearch)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-3 pt-3 border-t border-line text-sm font-semibold">
-                  <span className="text-ink">Total</span>
-                  <span className="text-ink">{currency(total)}</span>
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-ink/40">
-                Select a variation type to see the estimated fees.
-              </p>
-            )}
-            <p className="text-[10px] text-ink/30 mt-3">
-              Estimate only. Final amount will be confirmed upon evaluation.
-            </p>
-            {refNumber && (
-              <p className="text-[10px] text-ink/30 mt-4 pt-3 border-t border-line">
-                Appointment Ref. {refNumber}
-              </p>
-            )}
-          </aside>
         </div>
       </div>
     </AppLayout>
